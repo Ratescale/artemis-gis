@@ -6,7 +6,7 @@ const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
   projection: 'globe', // 地球儀表示
-  minzoom: 2,
+  minzoom: 3,
   maxzoom: 8,
   center: [-20.0873, 9.58738]
 });
@@ -102,29 +102,41 @@ map.on('dragend', () => {
 spinGlobe();
 
 
+// ========================================
+// 検索機能の実装（クレーター名検索）
+// ========================================
+
+// ここでは、Mapbox Studio にアップロードしたタイルセットの
+// Tileset ID「moon_craters_newfixed-bk5j1l」
+// をスタイル内に追加している前提です。
+// ※スタイルエディターで設定した「ソースID」を使用してください。
+// この例ではソースIDとしても "moon_craters_newfixed-bk5j1l" としています。
+
 const searchBox = document.getElementById('searchBox');
 if (searchBox) {
   searchBox.addEventListener('input', function () {
     const query = this.value.trim().toLowerCase();
-    if (!query) return; // 空文字なら何もしない
+    console.log("検索クエリ:", query);
+    if (!query) return; // 空文字の場合は処理しない
 
-    // クレーター名タイルセットのフィーチャーを取得
-    // ※注意: querySourceFeatures は現在のビューポート内にあるフィーチャーしか返さないため、
-    //        該当フィーチャーがビューポート外の場合、結果は得られません。
-    const features = map.querySourceFeatures('moon_craters_newfixed-bk5j1l'); // ソースIDを確認・変更してください
+    // 現在のビューポート内にある「moon_craters_newfixed-bk5j1l」ソースのフィーチャーを取得
+    const features = map.querySourceFeatures('moon_craters_newfixed-bk5j1l');
+    console.log("取得したフィーチャー数:", features.length);
 
-    // 取得したフィーチャーから、プロパティ name に query を含むものを抽出
+    // フィーチャーのプロパティ "name" に対して検索
     const matching = features.filter(f => {
-      return f.properties &&
-             f.properties.name &&
-             f.properties.name.toLowerCase().includes(query);
+      if (f.properties && f.properties.name) {
+        return f.properties.name.toLowerCase().includes(query);
+      }
+      return false;
     });
+    console.log("一致したフィーチャー:", matching);
 
     if (matching.length > 0) {
       const feature = matching[0];
-      // feature.geometry が Point 型であると仮定
+      // フィーチャーのジオメトリが Point 型である前提
       const coordinates = feature.geometry.coordinates;
-      // flyTo でその位置にズームイン（例：zoom 10）
+      console.log("飛ばす先の座標:", coordinates);
       map.flyTo({ center: coordinates, zoom: 10 });
     }
   });
