@@ -1,16 +1,19 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapbox GL JS - Custom Search</title>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Globe Spin Map</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <!-- Mapbox GL JS のスタイルシート -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css" rel="stylesheet">
+    <!-- 独自のスタイルシート -->
     <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <input type="text" id="searchBox" placeholder="検索 (例: タイルセットの名前)">
+  </head>
+  <body>
     <div id="map"></div>
+    <!-- Mapbox GL JS のスクリプト -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js"></script>
+    <!-- 独自のスクリプト -->
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

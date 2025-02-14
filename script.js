@@ -1,69 +1,65 @@
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("🛠 DOM ロード完了");
-  
-    // Mapbox GL JS の読み込み確認
-    if (typeof mapboxgl === 'undefined') {
-      console.error("🚨 Mapbox GL JS がロードされていません！");
-      return;
-    } else {
-      console.log("🛠 Mapbox GL JS ロード成功");
+// 公開用アクセストークンを設定
+mapboxgl.accessToken = 'pk.eyJ1IjoicmVuc2FuIiwiYSI6ImNsbmU5M2VmbjA0MTcya21lZzA3ZWoxNmkifQ.xPW2Ai8yWpUcKkJYrTOYqw';
+
+// マップの初期化
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v9',
+  projection: 'globe', // 地球儀表示にする
+  zoom: 1,
+  center: [30, 15]
+});
+
+// ナビゲーションコントロールを追加し、スクロールによるズームを無効化
+map.addControl(new mapboxgl.NavigationControl());
+map.scrollZoom.disable();
+
+// スタイルのロード完了後に大気（Fog）の設定を実施
+map.on('style.load', () => {
+  map.setFog({}); // デフォルトの大気表現を適用
+});
+
+/* -------------------------------
+   Globe（地球儀）の自動回転設定
+   ・低ズーム時は自動回転させる
+   ・ズームレベルが上がると回転を停止
+--------------------------------- */
+
+// 回転にかかる時間や回転停止の閾値
+const secondsPerRevolution = 240; // 低ズーム時は240秒で1回転
+const maxSpinZoom = 5;            // ズームレベル5以上では回転しない
+const slowSpinZoom = 3;           // ズームレベル3～5で徐々に回転速度を低下
+
+let userInteracting = false;      // ユーザー操作中は自動回転を停止
+const spinEnabled = true;         // 自動回転の有効/無効
+
+function spinGlobe() {
+  const zoom = map.getZoom();
+  if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
+    // 1秒間に回転する角度（度数）
+    let distancePerSecond = 360 / secondsPerRevolution;
+    if (zoom > slowSpinZoom) {
+      // ズームレベルが上がると回転速度を低下
+      const zoomDiff = (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
+      distancePerSecond *= zoomDiff;
     }
-  
-    // ※注意: クライアントサイドでは公開用アクセストークン (pk.*) を使用してください
-    mapboxgl.accessToken = 'pk.eyJ1IjoicmVuc2FuIiwiYSI6ImNsbmU5M2VmbjA0MTcya21lZzA3ZWoxNmkifQ.xPW2Ai8yWpUcKkJYrTOYqw';
-  
-    // マップの初期化
-    const map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
-      center: [-20.0873, 9.58738],
-      zoom: 8
-    });
-  
-    // スタイルロード時のイベント
-    map.on('style.load', () => {
-      console.log("🛠 Mapbox スタイルがロードされました:", map.getStyle());
-    });
-  
-    // マップ完全ロード時のイベント
-    map.on('load', () => {
-      console.log("✅ Mapbox の地図が完全にロードされました！");
-    });
-  
-    // エラーハンドリング
-    map.on('error', (e) => {
-      console.error("🚨 Mapbox エラー発生:", e);
-    });
-  
-    // 検索ボックスのイベントリスナー
-    const searchBox = document.getElementById('searchBox');
-    if (searchBox) {
-      searchBox.addEventListener('input', async function () {
-        const query = this.value.toLowerCase();
-        try {
-          // ※注意: 'rensan.bemrywfa' は、Mapbox Studio のスタイル内に定義されているソース名と一致している必要があります
-          const features = map.querySourceFeatures('rensan.bemrywfa');
-          if (!features || features.length === 0) {
-            console.error("🚨 指定されたソースが見つからないか、データがありません。");
-            return;
-          }
-          // 各フィーチャーからプロパティと座標を抽出
-          const placeNames = features.map(f => ({
-            name: f.properties.name,
-            coordinates: f.geometry.coordinates
-          }));
-          // 検索クエリにマッチするフィーチャーを抽出
-          const filtered = placeNames.filter(p => p.name.toLowerCase().includes(query));
-          if (filtered.length > 0) {
-            // 最初の一致項目へアニメーション移動
-            map.flyTo({ center: filtered[0].coordinates, zoom: 15 });
-          }
-        } catch (err) {
-          console.error("🚨 検索機能のエラー:", err);
-        }
-      });
-    } else {
-      console.error("🚨 検索ボックスが見つかりません！");
-    }
-  });
-  
+    // 現在の中心座標を取得し、経度を減少させることで回転を表現
+    const center = map.getCenter();
+    center.lng -= distancePerSecond;
+    // 1秒かけてスムーズに移動
+    map.easeTo({ center, duration: 1000, easing: (n) => n });
+  }
+}
+
+// ユーザー操作（マウスダウンやドラッグ開始）時は自動回転を停止
+map.on('mousedown', () => { userInteracting = true; });
+map.on('dragstart', () => { userInteracting = true; });
+
+// アニメーション終了後に、ユーザー操作がなければ再び回転を開始
+map.on('moveend', () => {
+  userInteracting = false;
+  spinGlobe();
+});
+
+// 初回の自動回転開始
+spinGlobe();
