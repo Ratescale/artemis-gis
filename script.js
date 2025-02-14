@@ -120,7 +120,9 @@ if (searchBox) {
     if (!query) return; // 空文字の場合は処理しない
 
     // 現在のビューポート内にある「moon_craters_newfixed-bk5j1l」ソースのフィーチャーを取得
-    const features = map.querySourceFeatures('moon_craters_newfixed-bk5j1l');
+    const features = map.querySourceFeatures('composite', {
+        sourceLayer: 'moon_craters_newfixed-bk5j1l'
+      });      
     console.log("取得したフィーチャー数:", features.length);
 
     // フィーチャーのプロパティ "name" に対して検索
