@@ -22,12 +22,10 @@ map.on('style.load', () => {
   color: 'rgba(202, 209, 255, 0.5)',
   // 空間の色（宇宙側の色）
   'space-color': 'rgba(11, 11, 25, 1)',
-  // 地平線部分の色（グローの見た目に影響）
-  'high-color': 'rgba(202, 209, 255, 0)',
   // 地平線のブレンド度合い（0～1）
   'horizon-blend': 0.2,
   // 星の輝きの強度（通常は0）
-  'star-intensity': 0.0
+  'star-intensity': 1
   }); // デフォルトの大気表現を適用
 });
 
