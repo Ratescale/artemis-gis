@@ -1,15 +1,25 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoicmVuc2FuIiwiYSI6ImNsbmU5M2VmbjA0MTcya21lZzA3ZWoxNmkifQ.xPW2Ai8yWpUcKkJYrTOYqw';
 
 const map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
-    center: [-20.0873, 9.58738], // コペルニクスを初期位置
-    minzoom: 0,
-    maxzoom: 8
+    container: 'map', 
+    style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap', 
+    center: [-20.0873, 9.58738], 
+    zoom: 8
 });
 
+// ✅ スタイルロードイベント
+map.on('style.load', () => {
+    console.log("🛠  Mapbox スタイルがロードされました:", map.getStyle());
+});
+
+// ✅ 完全ロード確認
 map.on('load', () => {
-    console.log("✅ Mapbox スタイルが正常にロードされました:", map.getStyle());
+    console.log("✅ Mapbox の地図が完全にロードされました！");
+});
+
+// ✅ エラーハンドリング
+map.on('error', (e) => {
+    console.error("🚨 Mapbox エラー発生:", e);
 });
 
 // 🔹 検索ボックスのイベントリスナー
