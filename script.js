@@ -4,10 +4,11 @@ mapboxgl.accessToken = 'pk.eyJ1IjoicmVuc2FuIiwiYSI6ImNsbmU5M2VmbjA0MTcya21lZzA3Z
 // マップの初期化
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v9',
+  style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
   projection: 'globe', // 地球儀表示
-  zoom: 1,
-  center: [30, 15]
+  minzoom: 1,
+  maxzoom: 8,
+  center: [-20.0873, 9.58738]
 });
 
 // ナビゲーションコントロールを追加し、スクロールによるズームを無効化
@@ -16,7 +17,16 @@ map.scrollZoom.disable();
 
 // スタイルロード後に Fog（大気効果）を設定（必要に応じて調整可能）
 map.on('style.load', () => {
-  map.setFog({}); // デフォルトの大気表現
+  map.setFog({
+    // 大気の基本色（例：やや薄いブルー）
+  color: 'rgba(202, 209, 255, 0.5)',
+  // 空間の色（宇宙側の色）
+  'space-color': 'rgba(11, 11, 25, 1)',
+  // 地平線のブレンド度合い（0～1）
+  'horizon-blend': 0.01,
+  // 星の輝きの強度（通常は0）
+  'star-intensity': 1
+  }); 
 });
 
 /* ====================================
