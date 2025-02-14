@@ -139,7 +139,13 @@ if (searchBox) {
       // フィーチャーのジオメトリが Point 型である前提
       const coordinates = feature.geometry.coordinates;
       console.log("飛ばす先の座標:", coordinates);
-      map.flyTo({ center: coordinates, zoom: 10 });
+      map.flyTo({
+        center: coordinates,
+        zoom: 10,
+        speed: 1.2,
+        curve: 1,
+        easing: t => t,
+      });
     }
   });
 } else {
