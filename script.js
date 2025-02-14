@@ -9,8 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("🛠 Mapbox GL JS ロード成功");
     }
   
-    // アクセストークンの設定
-    mapboxgl.accessToken = 'sk.eyJ1IjoicmVuc2FuIiwiYSI6ImNtNzUwdWVnaDBnYm8yaXF5bnhlYml4ZjgifQ.p6imH-IfdDRXoVNbr4ZlhQ';
+    // ※注意: クライアントサイドでは公開用アクセストークン (pk.*) を使用してください
+    mapboxgl.accessToken = 'pk.eyJ1IjoicmVuc2FuIiwiYSI6ImNsbmU5M2VmbjA0MTcya21lZzA3ZWoxNmkifQ.xPW2Ai8yWpUcKkJYrTOYqw';
   
     // マップの初期化
     const map = new mapboxgl.Map({
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
       zoom: 8
     });
   
-    // スタイルのロード完了時のイベント
+    // スタイルロード時のイベント
     map.on('style.load', () => {
       console.log("🛠 Mapbox スタイルがロードされました:", map.getStyle());
     });
@@ -40,9 +40,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (searchBox) {
       searchBox.addEventListener('input', async function () {
         const query = this.value.toLowerCase();
-  
         try {
-          // ※注意: 'rensan.bemrywfa' はスタイル内で定義されたソース名と一致している必要があります。
+          // ※注意: 'rensan.bemrywfa' は、Mapbox Studio のスタイル内に定義されているソース名と一致している必要があります
           const features = map.querySourceFeatures('rensan.bemrywfa');
           if (!features || features.length === 0) {
             console.error("🚨 指定されたソースが見つからないか、データがありません。");
@@ -53,7 +52,6 @@ document.addEventListener("DOMContentLoaded", function () {
             name: f.properties.name,
             coordinates: f.geometry.coordinates
           }));
-  
           // 検索クエリにマッチするフィーチャーを抽出
           const filtered = placeNames.filter(p => p.name.toLowerCase().includes(query));
           if (filtered.length > 0) {
