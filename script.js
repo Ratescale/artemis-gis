@@ -29,46 +29,43 @@ map.on('style.load', () => {
   }); 
 });
 
-/* -------------------------------
-   Globe（地球儀）の自動回転設定
-   ・低ズーム時は自動回転させる
-   ・ズームレベルが上がると回転を停止
---------------------------------- */
+// 自動回転制御用フラグ
+let userInteracting = false;
+const spinEnabled = true;
 
-// 回転にかかる時間や回転停止の閾値
-const secondsPerRevolution = 240; // 低ズーム時は240秒で1回転
+// 自動回転の設定パラメータ
+const secondsPerRevolution = 240; // 240秒で1回転
 const maxSpinZoom = 5;            // ズームレベル5以上では回転しない
-const slowSpinZoom = 3;           // ズームレベル3～5で徐々に回転速度を低下
+const slowSpinZoom = 3;           // ズームレベル3～5で回転速度を低下
 
-let userInteracting = false;      // ユーザー操作中は自動回転を停止
-const spinEnabled = true;         // 自動回転の有効/無効
-
+// 自動回転処理（requestAnimationFrame を利用）
 function spinGlobe() {
+  // ユーザー操作中でなく、かつ自動回転が有効で、かつズームが低い場合のみ回転
   const zoom = map.getZoom();
   if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
-    // 1秒間に回転する角度（度数）
     let distancePerSecond = 360 / secondsPerRevolution;
     if (zoom > slowSpinZoom) {
-      // ズームレベルが上がると回転速度を低下
       const zoomDiff = (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
       distancePerSecond *= zoomDiff;
     }
-    // 現在の中心座標を取得し、経度を減少させることで回転を表現
+    // 60fps前提で1フレームあたりの角度を計算
+    const increment = distancePerSecond / 60;
     const center = map.getCenter();
-    center.lng -= distancePerSecond;
-    // 1秒かけてスムーズに移動
-    map.easeTo({ center, duration: 1000, easing: (n) => n });
+    center.lng -= increment;
+    // 即時に中心座標を更新（easeTo ではなく jumpTo を使用）
+    map.jumpTo({ center });
   }
+  requestAnimationFrame(spinGlobe);
 }
 
-// ユーザー操作（マウスダウンやドラッグ開始）時は自動回転を停止
+// ユーザー操作開始時：自動回転を停止
 map.on('mousedown', () => { userInteracting = true; });
 map.on('dragstart', () => { userInteracting = true; });
 
-// アニメーション終了後に、ユーザー操作がなければ再び回転を開始
-map.on('moveend', () => {
-  userInteracting = false;
-  spinGlobe();
+// ユーザー操作終了時：一定時間後に自動回転を再開
+map.on('dragend', () => {
+  // 3秒後に自動回転を再開（必要に応じて調整）
+  setTimeout(() => { userInteracting = false; }, 3000);
 });
 
 // 初回の自動回転開始
