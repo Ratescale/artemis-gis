@@ -6,7 +6,8 @@ const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
   projection: 'globe', // 地球儀表示にする
-  zoom: 1,
+  minzoom: 1,
+  maxzoom: 8,
   center: [-20.0873, 9.58738]
 });
 
@@ -16,7 +17,7 @@ map.scrollZoom.disable();
 
 // スタイルのロード完了後に大気（Fog）の設定を実施
 map.on('style.load', () => {
-  map.setFog({}); // デフォルトの大気表現を適用
+  map.setFog(null); // デフォルトの大気表現を適用
 });
 
 /* -------------------------------
