@@ -8,6 +8,10 @@ const map = new mapboxgl.Map({
     maxzoom: 8
 });
 
+map.on('load', () => {
+    console.log("✅ Mapbox スタイルが正常にロードされました:", map.getStyle());
+});
+
 // 🔹 検索ボックスのイベントリスナー
 document.getElementById('searchBox').addEventListener('input', async function () {
     const query = this.value.toLowerCase();
