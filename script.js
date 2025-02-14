@@ -134,20 +134,33 @@ if (searchBox) {
     });
     console.log("一致したフィーチャー:", matching);
 
-    if (matching.length > 0) {
-      const feature = matching[0];
-      // フィーチャーのジオメトリが Point 型である前提
-      const coordinates = feature.geometry.coordinates;
-      console.log("飛ばす先の座標:", coordinates);
-      map.flyTo({
-        center: coordinates,
-        zoom: 10,
-        speed: 1.2,
-        curve: 1,
-        easing: t => t,
+    // 検索結果リストに候補を表示
+    matching.forEach(feature => {
+        const li = document.createElement('li');
+        li.textContent = feature.properties.name;
+        li.addEventListener('click', () => {
+          // 候補をクリックしたら、そのフィーチャーの座標に飛ぶ
+          const coords = feature.geometry.coordinates;
+          console.log("飛ばす先の座標:", coords);
+          // ズームレベルが小さい場合は、最低 zoom:10 に設定
+          let targetZoom = map.getZoom();
+          if (targetZoom < 10) {
+            targetZoom = 10;
+          }
+          map.flyTo({
+            center: coords,
+            zoom: targetZoom,
+            speed: 1.2,
+            curve: 1,
+            easing: t => t
+          });
+          // 検索ボックスに候補の名前を反映して、結果リストをクリア
+          searchBox.value = feature.properties.name;
+          clearResults();
+        });
+        resultsContainer.appendChild(li);
       });
-    }
-  });
-} else {
-  console.error("検索ボックスが見つかりません！");
-}
+    });
+  } else {
+    console.error("検索ボックスが見つかりません！");
+  }

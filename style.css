@@ -22,3 +22,29 @@ body, html {
     background: white;
     width: 250px;
   }
+
+/* 検索結果リスト */
+#searchResults {
+    position: absolute;
+    top: 50px;
+    left: 10px;
+    z-index: 20;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 250px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+  }
+  
+  #searchResults li {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  
+  #searchResults li:hover {
+    background: #eee;
+  }
