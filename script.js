@@ -10,7 +10,8 @@ const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
   projection: 'globe', // 地球儀表示
-  minzoom: 3,
+  zoom: 2,
+  minzoom: 2,
   maxzoom: 8,
   center: [-20.0873, 9.58738]
 });
