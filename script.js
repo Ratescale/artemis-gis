@@ -5,7 +5,7 @@
 // 公開用アクセストークンを設定
 mapboxgl.accessToken = 'pk.eyJ1IjoicmVuc2FuIiwiYSI6ImNsbmU5M2VmbjA0MTcya21lZzA3ZWoxNmkifQ.xPW2Ai8yWpUcKkJYrTOYqw';
 
-// マップの初期化（スタイルはご自身のスタイルを指定してください）
+// マップの初期化
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
@@ -15,18 +15,23 @@ const map = new mapboxgl.Map({
   center: [-20.0873, 9.58738]
 });
 
-// ナビゲーションコントロール追加（ズーム、回転操作など）
+// ナビゲーションコントロール追加（ズーム・回転操作など）
 map.addControl(new mapboxgl.NavigationControl());
+// ※スクロールズームは有効
 map.scrollZoom.enable();
 
 // スタイルロード後に Fog（大気効果）を設定
 map.on('style.load', () => {
   map.setFog({
-    color: 'rgba(202, 209, 255, 0.5)',   // 大気の基本色
-    'space-color': 'rgba(11, 11, 25, 1)',  // 宇宙側の色
-    'horizon-blend': 0.01,                // 地平線のブレンド度合い
-    'star-intensity': 1                   // 星の輝きの強度
-  });
+    // 大気の基本色（やや薄いブルー）
+    color: 'rgba(202, 209, 255, 0.5)',
+    // 空間の色（宇宙側の色）
+    'space-color': 'rgba(11, 11, 25, 1)',
+    // 地平線のブレンド度合い（0～1）
+    'horizon-blend': 0.01,
+    // 星の輝きの強度（通常は0）
+    'star-intensity': 1
+  }); 
 });
 
 // 自動回転のパラメータ
@@ -55,7 +60,7 @@ function spinGlobe() {
   spinAnimationId = requestAnimationFrame(spinGlobe);
 }
 
-// 自動回転停止
+// 自動回転を停止する関数
 function pauseSpin() {
   spinPaused = true;
   if (spinAnimationId) {
@@ -64,14 +69,14 @@ function pauseSpin() {
   }
 }
 
-// 自動回転再開
+// 自動回転を再開する関数
 function resumeSpin() {
   if (!spinPaused) return;
   spinPaused = false;
   spinGlobe();
 }
 
-// ユーザー操作開始時に自動回転停止
+// ユーザー操作開始時に自動回転を停止
 map.on('mousedown', pauseSpin);
 map.on('dragstart', pauseSpin);
 map.on('zoomstart', pauseSpin);
@@ -85,50 +90,71 @@ spinGlobe();
 
 
 // ================================
-// カスタム Geocoding（Local Geocoder）の設定
+// 検索機能（クレーター名検索）
 // ================================
 
-// 今回は、先ほどエクスポートした GeoJSON ファイル（moon_craters.geojson）を使用します。
-// このファイルは、index.html と同じディレクトリに配置してください。
+// ※スタイル内のソースは "composite"、対象ソースレイヤーは "moon_craters_newfixed-bk5j1l" となっています。
+// ※また、HTML内に <input id="searchBox"> と <ul id="searchResults"> がある前提です。
 
-let globalCraters = [];
+// 検索ボックスと検索結果リストの取得
+const searchBox = document.getElementById('searchBox');
+const resultsContainer = document.getElementById('searchResults');
 
-// GeoJSON データを読み込む
-fetch('moon_craters.geojson')
-  .then(response => response.json())
-  .then(data => {
-    globalCraters = data.features;
-    console.log("Global crater data loaded:", globalCraters.length, "features");
+// 結果リストをクリアする関数
+function clearResults() {
+  resultsContainer.innerHTML = '';
+}
 
-    // GeoJSON のロード完了後に、Geocoder を初期化
-    const geocoder = new MapboxGeocoder({
-      accessToken: mapboxgl.accessToken,
-      localGeocoder: function(query) {
-        // globalCraters から、name プロパティに query が含まれるフィーチャーを返す
-        return globalCraters.filter(feature =>
-          feature.properties.name.toLowerCase().includes(query.toLowerCase())
-        );
-      },
-      placeholder: 'クレーター名で検索',
-      mapboxgl: mapboxgl,
-      marker: false,          // 自動マーカーは追加しない
-      localGeocoderOnly: true // カスタムデータのみを検索対象にする
+// 検索イベントの設定
+if (searchBox) {
+  searchBox.addEventListener('input', function () {
+    const query = this.value.trim().toLowerCase();
+    console.log("検索クエリ:", query);
+    clearResults();
+    if (!query) return; // 入力が空なら何もしない
+
+    // 現在のビューポート内にあるフィーチャーを取得
+    // ※ "composite" ソースから、対象のソースレイヤー "moon_craters_newfixed-bk5j1l" を指定
+    const features = map.querySourceFeatures('composite', {
+      sourceLayer: 'moon_craters_newfixed-bk5j1l'
     });
+    console.log("取得したフィーチャー数:", features.length);
 
-    // Geocoder コントロールをマップに追加（左上に表示されます）
-    map.addControl(geocoder);
+    // フィーチャーのプロパティ "name" に対して検索
+    const matching = features.filter(f => {
+      return f.properties &&
+             f.properties.name &&
+             f.properties.name.toLowerCase().includes(query);
+    });
+    console.log("一致したフィーチャー:", matching);
 
-    // 検索結果選択時の動作
-    geocoder.on('result', function(e) {
-      const coords = e.result.geometry.coordinates;
-      console.log("Geocoder 選択結果の座標:", coords);
-      map.flyTo({
-        center: coords,
-        zoom: 10, // 必要に応じてズームレベルを調整
-        speed: 1.2,
-        curve: 1,
-        easing: t => t
+    // 検索結果があれば、候補リストを表示
+    matching.forEach(feature => {
+      const li = document.createElement('li');
+      li.textContent = feature.properties.name;
+      li.addEventListener('click', () => {
+        // 候補クリック時に、そのフィーチャーの座標へ flyTo で移動
+        const coords = feature.geometry.coordinates;
+        console.log("飛ばす先の座標:", coords);
+        // ズームレベルが低い場合は、最低 zoom:10 に設定
+        let targetZoom = map.getZoom();
+        if (targetZoom < 10) {
+          targetZoom = 10;
+        }
+        map.flyTo({
+          center: coords,
+          zoom: targetZoom,
+          speed: 1.2,
+          curve: 1,
+          easing: t => t
+        });
+        // 検索ボックスに候補名を反映し、結果リストをクリア
+        searchBox.value = feature.properties.name;
+        clearResults();
       });
+      resultsContainer.appendChild(li);
     });
-  })
-  .catch(error => console.error("Error loading crater data:", error));
+  });
+} else {
+  console.error("検索ボックスが見つかりません！");
+}
