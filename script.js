@@ -1,40 +1,71 @@
-mapboxgl.accessToken = 'sk.eyJ1IjoicmVuc2FuIiwiYSI6ImNtNzUwdWVnaDBnYm8yaXF5bnhlYml4ZjgifQ.p6imH-IfdDRXoVNbr4ZlhQ';
-
-const map = new mapboxgl.Map({
-    container: 'map', 
-    style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap', 
-    center: [-20.0873, 9.58738], 
-    zoom: 8
-});
-
-// ✅ スタイルロードイベント
-map.on('style.load', () => {
-    console.log("🛠  Mapbox スタイルがロードされました:", map.getStyle());
-});
-
-// ✅ 完全ロード確認
-map.on('load', () => {
-    console.log("✅ Mapbox の地図が完全にロードされました！");
-});
-
-// ✅ エラーハンドリング
-map.on('error', (e) => {
-    console.error("🚨 Mapbox エラー発生:", e);
-});
-
-// 🔹 検索ボックスのイベントリスナー
-document.getElementById('searchBox').addEventListener('input', async function () {
-    const query = this.value.toLowerCase();
-    
-    // 🔹 ベクタータイルセットのデータ取得
-    const features = await map.querySourceFeatures('rensan.bemrywfa');
-    const placeNames = features.map(f => ({ 
-        name: f.properties.name, 
-        coordinates: f.geometry.coordinates 
-    }));
-
-    const filtered = placeNames.filter(p => p.name.toLowerCase().includes(query));
-    if (filtered.length > 0) {
-        map.flyTo({ center: filtered[0].coordinates, zoom: 15 });
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("🛠 DOM ロード完了");
+  
+    // Mapbox GL JS の読み込み確認
+    if (typeof mapboxgl === 'undefined') {
+      console.error("🚨 Mapbox GL JS がロードされていません！");
+      return;
+    } else {
+      console.log("🛠 Mapbox GL JS ロード成功");
     }
-});
+  
+    // アクセストークンの設定
+    mapboxgl.accessToken = 'sk.eyJ1IjoicmVuc2FuIiwiYSI6ImNtNzUwdWVnaDBnYm8yaXF5bnhlYml4ZjgifQ.p6imH-IfdDRXoVNbr4ZlhQ';
+  
+    // マップの初期化
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
+      center: [-20.0873, 9.58738],
+      zoom: 8
+    });
+  
+    // スタイルのロード完了時のイベント
+    map.on('style.load', () => {
+      console.log("🛠 Mapbox スタイルがロードされました:", map.getStyle());
+    });
+  
+    // マップ完全ロード時のイベント
+    map.on('load', () => {
+      console.log("✅ Mapbox の地図が完全にロードされました！");
+    });
+  
+    // エラーハンドリング
+    map.on('error', (e) => {
+      console.error("🚨 Mapbox エラー発生:", e);
+    });
+  
+    // 検索ボックスのイベントリスナー
+    const searchBox = document.getElementById('searchBox');
+    if (searchBox) {
+      searchBox.addEventListener('input', async function () {
+        const query = this.value.toLowerCase();
+  
+        try {
+          // ※注意: 'rensan.bemrywfa' はスタイル内で定義されたソース名と一致している必要があります。
+          const features = map.querySourceFeatures('rensan.bemrywfa');
+          if (!features || features.length === 0) {
+            console.error("🚨 指定されたソースが見つからないか、データがありません。");
+            return;
+          }
+          // 各フィーチャーからプロパティと座標を抽出
+          const placeNames = features.map(f => ({
+            name: f.properties.name,
+            coordinates: f.geometry.coordinates
+          }));
+  
+          // 検索クエリにマッチするフィーチャーを抽出
+          const filtered = placeNames.filter(p => p.name.toLowerCase().includes(query));
+          if (filtered.length > 0) {
+            // 最初の一致項目へアニメーション移動
+            map.flyTo({ center: filtered[0].coordinates, zoom: 15 });
+          }
+        } catch (err) {
+          console.error("🚨 検索機能のエラー:", err);
+        }
+      });
+    } else {
+      console.error("🚨 検索ボックスが見つかりません！");
+    }
+  });
+  
