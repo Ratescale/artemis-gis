@@ -6,7 +6,7 @@ const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
   projection: 'globe', // 地球儀表示
-  minzoom: 1,
+  minzoom: 2,
   maxzoom: 8,
   center: [-20.0873, 9.58738]
 });
@@ -100,3 +100,34 @@ map.on('dragend', () => {
 
 // 初回の自動回転開始
 spinGlobe();
+
+
+const searchBox = document.getElementById('searchBox');
+if (searchBox) {
+  searchBox.addEventListener('input', function () {
+    const query = this.value.trim().toLowerCase();
+    if (!query) return; // 空文字なら何もしない
+
+    // クレーター名タイルセットのフィーチャーを取得
+    // ※注意: querySourceFeatures は現在のビューポート内にあるフィーチャーしか返さないため、
+    //        該当フィーチャーがビューポート外の場合、結果は得られません。
+    const features = map.querySourceFeatures('moon_craters_newfixed-bk5j1l'); // ソースIDを確認・変更してください
+
+    // 取得したフィーチャーから、プロパティ name に query を含むものを抽出
+    const matching = features.filter(f => {
+      return f.properties &&
+             f.properties.name &&
+             f.properties.name.toLowerCase().includes(query);
+    });
+
+    if (matching.length > 0) {
+      const feature = matching[0];
+      // feature.geometry が Point 型であると仮定
+      const coordinates = feature.geometry.coordinates;
+      // flyTo でその位置にズームイン（例：zoom 10）
+      map.flyTo({ center: coordinates, zoom: 10 });
+    }
+  });
+} else {
+  console.error("検索ボックスが見つかりません！");
+}
