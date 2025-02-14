@@ -4,10 +4,10 @@ mapboxgl.accessToken = 'pk.eyJ1IjoicmVuc2FuIiwiYSI6ImNsbmU5M2VmbjA0MTcya21lZzA3Z
 // マップの初期化
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v9',
+  style: 'mapbox://styles/rensan/cm695riwn00fr01stf1ef0tap',
   projection: 'globe', // 地球儀表示にする
   zoom: 1,
-  center: [30, 15]
+  center: [-20.0873, 9.58738]
 });
 
 // ナビゲーションコントロールを追加し、スクロールによるズームを無効化
