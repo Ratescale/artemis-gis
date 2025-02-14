@@ -1,5 +1,5 @@
-# artemis-gis
-Artemis GIS
+# Artemis GIS
+
 
 # LICENSE
 CC BY-NC-ND 4.0
