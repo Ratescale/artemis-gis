@@ -13,7 +13,7 @@ const map = new mapboxgl.Map({
 
 // ナビゲーションコントロールを追加し、スクロールによるズームを無効化
 map.addControl(new mapboxgl.NavigationControl());
-map.scrollZoom.disable();
+//map.scrollZoom.disable();
 
 // スタイルロード後に Fog（大気効果）を設定（必要に応じて調整可能）
 map.on('style.load', () => {
