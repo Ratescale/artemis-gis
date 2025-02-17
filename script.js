@@ -140,7 +140,7 @@ if (searchBox) {
         // ズームレベルが低い場合は、最低 zoom:10 に設定
         let targetZoom = map.getZoom();
         if (targetZoom < 10) {
-          targetZoom = 10;
+          targetZoom = 8;
         }
         map.flyTo({
           center: coords,
